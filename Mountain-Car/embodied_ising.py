@@ -162,7 +162,7 @@ class ising:
 		for i in range(self.size):
 			self.C[i, i + 1:] = self.c[i, i + 1:] - self.m[i] * self.m[i + 1:]
 
-#		c1 = np.zeros((self.size, self.size))
+#		c_ref = np.zeros((self.size, self.size))
 #		for i in range(self.size):
 #			inds = np.array([], int)
 #			c = np.array([])
@@ -174,25 +174,24 @@ class ising:
 #				elif i > j:
 #					c = np.append(c, [self.c[j, i]])
 #			order = np.argsort(c)[::-1]
-#			c1[i, inds[order]] = self.Cint[i, :]
-#		self.c1 = np.triu(c1 + c1.T, 1)
-#		self.c1 *= 0.5
+#			c_ref[i, inds[order]] = self.Cint[i, :]
+#		self.c_ref = np.triu(c_ref + c_ref.T, 1)
+#		self.c_ref *= 0.5
 
-		c1 = self.Cint
 		# Exclude sensor means
 		self.m[0:self.Ssize] = 0
-		self.m1[0:self.Ssize] = 0
+		self.m_ref[0:self.Ssize] = 0
 		# Exclude sensor, motor, and sensor-motor correlations
-		self.c[0:self.Ssize, 0:self.Ssize] = 0
-		self.c[-self.Msize:, -self.Msize:] = 0
-		self.c[0:self.Ssize, -self.Msize:] = 0
-		self.c1[0:self.Ssize, 0:self.Ssize] = 0
-		self.c1[-self.Msize:, -self.Msize:] = 0
-		self.c1[0:self.Ssize, -self.Msize:] = 0
+		self.C[0:self.Ssize, 0:self.Ssize] = 0
+		self.C[-self.Msize:, -self.Msize:] = 0
+		self.C[0:self.Ssize, -self.Msize:] = 0
+		self.C_ref[0:self.Ssize, 0:self.Ssize] = 0
+		self.C_ref[-self.Msize:, -self.Msize:] = 0
+		self.C_ref[0:self.Ssize, -self.Msize:] = 0
 		
 		# Update weights
-		dh = self.m1 - self.m
-		dJ = self.c1 - self.c
+		dh = self.m_ref - self.m
+		dJ = self.C_ref - self.c
 
 		return dh, dJ
 
@@ -201,7 +200,7 @@ class ising:
 		u = 0.01
 		count = 0
 		dh, dJ = self.AdjustCorrelations(T)
-		fit = max(np.max(np.abs(self.c1 - self.c)), np.max(np.abs(self.m1 - self.m)))
+		fit = max(np.max(np.abs(self.C_ref - self.C)), np.max(np.abs(self.m_ref - self.m)))
 		x_min = np.min(self.x)
 		x_max = np.max(self.x)
 		maxmin_range = (self.env.max_position + self.env.min_position) / 2
@@ -224,7 +223,7 @@ class ising:
 						self.J[i, j] = Vmax * np.sign(self.J[i, j])
 
 			dh, dJ = self.AdjustCorrelations(T)
-			fit = np.max(np.abs(self.c1 - self.c))
+			fit = np.max(np.abs(self.C_ref - self.C))
 			if count % 1 == 0:
 				mid = (self.env.max_position + self.env.min_position) / 2
 				print(				self.size,

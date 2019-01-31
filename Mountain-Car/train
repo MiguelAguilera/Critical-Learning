@@ -3,7 +3,7 @@
 from embodied_ising import ising
 import numpy as np
 from sys import argv
-from ising_correlations import ising_correlations
+import ising_correlations as ic
 
 if len(argv) < 7:
     print(
@@ -31,17 +31,11 @@ repetitions = int(argv[6])
 L=100
 for rep in range(repetitions):
 	I = ising(size, Nsensors, Nmotors)
-	I.m1 = np.zeros(size)
-	I.Cint = np.zeros((size, size - 1))
-	for i in range(size):
-		c = []
-		for j in range(size - 1):
-			ind = np.random.randint(len(Cdist))
-			c += [Cdist[ind]]
-		I.Cint[i, :] = ising_correlations(L, L, size)
-
+	I.m_ref = ic.random_means(size)
+	I.pos = ic.random_positions(L, L, size)
+	I.C_ref = ic.ising_correlations(I.pos, I.m_ref)
 	I.CriticalLearning(Iterations, T)
 
 	filename = 'files/network-size_' + str(size) + '-sensors_' + str(Nsensors) + '-motors_' + str(
 	    Nmotors) + '-T_' + str(T) + '-Iterations_' + str(Iterations) + '-ind_' + str(rep) + '.npz'
-np.savez(filename, J=I.J, h=I.h, m1=I.m1, Cint=I.Cint)
+np.savez(filename, J=I.J, h=I.h, m1=I.m_ref, Cint=I.C_ref)
