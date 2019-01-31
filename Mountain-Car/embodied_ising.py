@@ -162,30 +162,35 @@ class ising:
 		for i in range(self.size):
 			self.C[i, i + 1:] = self.c[i, i + 1:] - self.m[i] * self.m[i + 1:]
 
-		c1 = np.zeros((self.size, self.size))
-		for i in range(self.size):
-			inds = np.array([], int)
-			c = np.array([])
-			for j in range(self.size):
-				if not i == j:
-					inds = np.append(inds, [j])
-				if i < j:
-					c = np.append(c, [self.c[i, j]])
-				elif i > j:
-					c = np.append(c, [self.c[j, i]])
-			order = np.argsort(c)[::-1]
-			c1[i, inds[order]] = self.Cint[i, :]
-		self.c1 = np.triu(c1 + c1.T, 1)
-		self.c1 *= 0.5
+#		c1 = np.zeros((self.size, self.size))
+#		for i in range(self.size):
+#			inds = np.array([], int)
+#			c = np.array([])
+#			for j in range(self.size):
+#				if not i == j:
+#					inds = np.append(inds, [j])
+#				if i < j:
+#					c = np.append(c, [self.c[i, j]])
+#				elif i > j:
+#					c = np.append(c, [self.c[j, i]])
+#			order = np.argsort(c)[::-1]
+#			c1[i, inds[order]] = self.Cint[i, :]
+#		self.c1 = np.triu(c1 + c1.T, 1)
+#		self.c1 *= 0.5
 
+		c1 = self.Cint
+		# Exclude sensor means
 		self.m[0:self.Ssize] = 0
 		self.m1[0:self.Ssize] = 0
+		# Exclude sensor, motor, and sensor-motor correlations
 		self.c[0:self.Ssize, 0:self.Ssize] = 0
 		self.c[-self.Msize:, -self.Msize:] = 0
 		self.c[0:self.Ssize, -self.Msize:] = 0
 		self.c1[0:self.Ssize, 0:self.Ssize] = 0
 		self.c1[-self.Msize:, -self.Msize:] = 0
 		self.c1[0:self.Ssize, -self.Msize:] = 0
+		
+		# Update weights
 		dh = self.m1 - self.m
 		dJ = self.c1 - self.c
 

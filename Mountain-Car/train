@@ -3,6 +3,7 @@
 from embodied_ising import ising
 import numpy as np
 from sys import argv
+from ising_correlations import ising_correlations
 
 if len(argv) < 7:
     print(
@@ -23,10 +24,11 @@ T = int(argv[4])
 Iterations = int(argv[5])
 repetitions = int(argv[6])
 
-filename = 'correlations-ising2D-size400.npy'
-Cdist = np.load(filename)
+#filename = 'correlations-ising2D-size400.npy'
+#Cdist = np.load(filename)
 
 
+L=100
 for rep in range(repetitions):
 	I = ising(size, Nsensors, Nmotors)
 	I.m1 = np.zeros(size)
@@ -36,7 +38,7 @@ for rep in range(repetitions):
 		for j in range(size - 1):
 			ind = np.random.randint(len(Cdist))
 			c += [Cdist[ind]]
-		I.Cint[i, :] = -np.sort(-np.array(c))
+		I.Cint[i, :] = ising_correlations(L, L, size)
 
 	I.CriticalLearning(Iterations, T)
 
