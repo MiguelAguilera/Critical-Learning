@@ -3,6 +3,7 @@ import numpy.random as rnd
 import cvxpy as cp
 from scipy.optimize import minimize
 
+
 def random_positions(Lx, Ly, N):
     pos = np.zeros((N, 3))
     pos[:, 0] = np.random.randint(0, Lx, N)
@@ -67,25 +68,29 @@ def ising_correlations(pos, m):
             C[i, j] = sign * 0.9 * r**-0.25
 #      C[j,i] = C[i,j]
     return C
-    
-def dist_matrix(pos):
-	return np.abs(pos[:,0]-pos[:,0,np.newaxis]) + np.abs(pos[:,1]-pos[:,1,np.newaxis])
 
-def adjust_positions(pos,C):
+
+def dist_matrix(pos):
+    return np.abs(pos[:, 0] - pos[:, 0, np.newaxis]) + \
+        np.abs(pos[:, 1] - pos[:, 1, np.newaxis])
+
+
+def adjust_positions(pos, C):
     N = C.shape[0]
-    iu = np.triu_indices(N,1)
-    r=np.zeros((N,N))
-    r[iu] = (np.abs(C[iu])/0.9)**-4
-    r=r+r.T
+    iu = np.triu_indices(N, 1)
+    r = np.zeros((N, N))
+    r[iu] = (np.abs(C[iu]) / 0.9)**-4
+    r = r + r.T
     r1 = dist_matrix(pos)
-    for rep in range(1000*N):
-        i1=np.random.randint(N)
-        i2=i1
-        while i2==i1:
-        	i2=np.random.randint(N)
-        sign=int(r1[i1,i2]>r[i1,i2])*2-1         # units have to get closer or further
+    for rep in range(1000 * N):
+        i1 = np.random.randint(N)
+        i2 = i1
+        while i2 == i1:
+            i2 = np.random.randint(N)
+        # units have to get closer or further
+        sign = int(r1[i1, i2] > r[i1, i2]) * 2 - 1
         ind = np.random.randint(2)               # random axis
-        pos[i1,ind] += sign*np.sign(pos[i2,ind]-pos[i1,ind])
-        pos=remove_repeated_positions(pos)
+        pos[i1, ind] += sign * np.sign(pos[i2, ind] - pos[i1, ind])
+        pos = remove_repeated_positions(pos)
         r1 = dist_matrix(pos)
     return pos
